@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Workout = require("./models/workout")
 
+
 const PORT = process.env.PORT || 3000
 
 const app = express();
@@ -10,14 +11,20 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(express.static("public"));
+app.use(require("./routes/route.js"));
+
+
 
 mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/fitness", {
   useNewUrlParser: true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  useUnifiedTopology: true 
 });
 
+const db = mongoose.connection
+db.on('open', () => console.log('Connected to Database'))
 
-app.use(require("./routes/route.js"));
+
 
 
 let workoutSeed = [
