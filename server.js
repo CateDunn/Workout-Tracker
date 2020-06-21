@@ -1,12 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
-// const mongodb = require("mongodb");
 const logger = require("morgan");
-// const mongojs = require("mongojs");
 const path = require("path");
 const db = require("./models");
-
-
 const app = express();
 const PORT = process.env.PORT || 3000
 
@@ -23,7 +19,7 @@ const database = mongoose.connection
 database.on('open', () => console.log('Connected to Database'))
 
 
-
+//routes
 app.get("/api/workouts", function (req, res) {
   db.Workout.find({}).then(function (data) {
     res.json(data);
