@@ -1,173 +1,83 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const mongodb = require("mongodb");
-const Workout = require("./models/workout")
+// const mongodb = require("mongodb");
+const logger = require("morgan");
+// const mongojs = require("mongojs");
+const path = require("path");
+const db = require("./models");
 
-
-const PORT = process.env.PORT || 3000
 
 const app = express();
+const PORT = process.env.PORT || 3000
 
+app.use(logger("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(express.static("public"));
-app.use(require("./routes/route"));
+// app.use(require("./routes/route"));
+
+
+// mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/fitness", {
+//   useNewUrlParser: true,
+//   useFindAndModify: false,
+//   useUnifiedTopology: true 
+// });
+
+let MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/workout";
+mongoose.connect(MONGODB_URI, {useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false});
+
+const database = mongoose.connection
+database.on('open', () => console.log('Connected to Database'))
 
 
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/fitness", {
-  useNewUrlParser: true,
-  useFindAndModify: false,
-  useUnifiedTopology: true 
+app.get("/api/workouts", function (req, res) {
+  db.Workout.find({}).then(function (data) {
+    res.json(data);
+  })
 });
 
-const db = mongoose.connection
-db.on('open', () => console.log('Connected to Database'))
+// routing to the workout UI dashboard
+app.get("/stats", function (req, res) {
+  res.sendFile(path.join(__dirname, "./public/stats.html"))
+});  
 
+// routing to the fitness tracker UI where users can interact with the app
+app.get("/exercise", function (req, res) {
+  res.sendFile(path.join(__dirname, "./public/exercise.html"))
+});
 
+app.put("/api/workouts/:id", function (req, res) {
+  db.Workout.findByIdAndUpdate(
+    req.params.id,
+    {
+      $push: { exercises: req.body }
+    }).then(function (data) {
+      res.json(data);
+    })
+});
 
+app.get("/api/workouts/range", function (req, res) {
+  db.Workout.find({}).then(function (data) {
+    res.json(data);
+  })
+});
 
-// let workoutSeed = [
-//   {
-//     day: new Date().setDate(new Date().getDate()-10),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Bicep Curl",
-//         duration: 20,
-//         weight: 100,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-9),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Lateral Pull",
-//         duration: 20,
-//         weight: 300,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-8),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Push Press",
-//         duration: 25,
-//         weight: 185,
-//         reps: 8,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-7),
-//     exercises: [
-//       {
-//         type: "cardio",
-//         name: "Running",
-//         duration: 25,
-//         distance: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-6),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Bench Press",
-//         duration: 20,
-//         weight: 285,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-5),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Bench Press",
-//         duration: 20,
-//         weight: 300,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-4),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Quad Press",
-//         duration: 30,
-//         weight: 300,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-3),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Bench Press",
-//         duration: 20,
-//         weight: 300,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-2),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Military Press",
-//         duration: 20,
-//         weight: 300,
-//         reps: 10,
-//         sets: 4
-//       }
-//     ]
-//   },
-//   {
-//     day: new Date().setDate(new Date().getDate()-1),
-//     exercises: [
-//       {
-//         type: "resistance",
-//         name: "Bench",
-//         duration: 30,
-//         distance: 2
-//       }
-//     ]
-//   }
-// ];
+app.post("/api/workouts", function ({ body }, res) {
+  db.Workout.create(body).then(function (data) {
+    res.json(data);
+  })
+});
 
-
-// Workout.create(workoutSeed)
-//   .then(fitness => {
-//     console.log(fitness);
-//   })
-//   .catch(({ message }) => {
-//     console.log(message);
-//   });
-
-  
-// });
+app.get("/all", function (req, res) {
+  db.Workout.find({}), (function (error, data) {
+    if (error) {
+      res.send(error)
+    } else {
+      res.json(data);
+    }
+  })
+});
 
 app.listen(PORT, () => {
   console.log(`App running on port ${PORT}!`)
