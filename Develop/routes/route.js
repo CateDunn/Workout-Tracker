@@ -6,7 +6,7 @@ const path = require("path");
 
 //html paths
 
-//new workout - works
+//new workout
 router.get('/exercise', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/exercise.html'));
 });
@@ -20,7 +20,6 @@ router.get('/stats', (req, res) => {
 //get all workouts
 router.get("/api/workouts", (req, res) => {
   Workout.find({})
-    // .sort({ date: -1 })
     .then(dbWorkout => {
       res.json(dbWorkout);
     })
@@ -29,23 +28,12 @@ router.get("/api/workouts", (req, res) => {
     });
 });
 
-
-router.post('/', async (req, res) => {
-  const workout = new Workout({
-    type: req.body.type,
-    name: req.body.name,
-    duration: req.body.duration,
-    weight: req.body.weight,
-    reps: req.body,reps,
-    sets: req.body.sets
+//add new workout
+router.post("/api/workouts", function ({ body }, res) {
+  db.Workout.create(body).then(function (data) {
+    res.json(data);
   })
-  try {
-    const newWorkout = await workout.save()
-    res.status(201).json(newWorkout)
-  } catch (err) {
-    res.status(400).json({ message: err.message })
-  }
-})
+});
 
 
   module.exports = router;
