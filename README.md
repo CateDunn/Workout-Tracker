@@ -24,7 +24,7 @@
   To use, install the following package: npm install
 
   ## Usage
-  View the deployed app at 
+  View the deployed app at https://desolate-forest-83302.herokuapp.com/
   To run locallly, use the following command: node server.js
 
   ## License
